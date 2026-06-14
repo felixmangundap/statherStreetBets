@@ -1,12 +1,12 @@
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { getLeagueBySlug } from '@/lib/queries'
+import { getLeagueBySlug, getUserLeague } from '@/lib/queries'
 import { db } from '@/db'
 import { leagueMembers, users } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
 import JoinButton from './_JoinButton'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { TrendingUp, Users } from 'lucide-react'
 
@@ -24,13 +24,11 @@ export default async function JoinSlugPage({ params }: Props) {
         <Card className="bg-zinc-900 border-zinc-800 max-w-md w-full">
           <CardHeader>
             <CardTitle className="text-rose-500">Invalid invite link</CardTitle>
-            <CardDescription className="text-zinc-400">
-              This league invite link is invalid or has expired.
-            </CardDescription>
+            <p className="text-zinc-400 text-sm mt-1">This league invite link is invalid or has expired.</p>
           </CardHeader>
           <CardContent>
             <Button asChild variant="outline" className="border-zinc-700 text-zinc-300">
-              <Link href="/join">Create your own league</Link>
+              <Link href="/join">Go back</Link>
             </Button>
           </CardContent>
         </Card>
@@ -45,15 +43,20 @@ export default async function JoinSlugPage({ params }: Props) {
 
   const { userId: clerkId } = await auth()
 
+  let currentLeagueName: string | null = null
+
   if (clerkId) {
     const [userRecord] = await db.select().from(users).where(eq(users.clerkId, clerkId)).limit(1)
     if (userRecord) {
-      const [existing] = await db
+      const [alreadyMember] = await db
         .select()
         .from(leagueMembers)
         .where(and(eq(leagueMembers.leagueId, league.id), eq(leagueMembers.userId, userRecord.id)))
         .limit(1)
-      if (existing) redirect('/dashboard')
+      if (alreadyMember) redirect('/dashboard')
+
+      const current = await getUserLeague(clerkId)
+      if (current) currentLeagueName = current.name
     }
   }
 
@@ -80,7 +83,7 @@ export default async function JoinSlugPage({ params }: Props) {
           </CardHeader>
           <CardContent>
             {clerkId ? (
-              <JoinButton slug={slug} leagueName={league.name} />
+              <JoinButton slug={slug} leagueName={league.name} currentLeagueName={currentLeagueName} />
             ) : (
               <Button asChild className="w-full bg-emerald-600 hover:bg-emerald-500 text-white">
                 <Link href={signInUrl}>Sign in to Join</Link>

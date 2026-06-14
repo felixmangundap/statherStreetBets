@@ -226,27 +226,53 @@ export default function SettingsPage() {
               </div>
 
               <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 space-y-4">
-                <h3 className="text-sm font-semibold text-zinc-300">Invite Link</h3>
+                <h3 className="text-sm font-semibold text-zinc-300">Invite</h3>
                 <p className="text-zinc-500 text-xs">
-                  Share this link to invite friends to your league.
+                  Share the invite code or full link. Friends can enter the code at{' '}
+                  <span className="text-zinc-400 font-mono">/join</span>.
                 </p>
 
-                <div className="flex gap-2">
-                  <div className="flex-1 bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2 text-xs text-zinc-400 font-mono truncate">
-                    {inviteUrl}
+                <div className="space-y-2">
+                  <label className="text-xs text-zinc-500">Invite code</label>
+                  <div className="flex gap-2">
+                    <div className="flex-1 bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2 text-sm text-zinc-200 font-mono tracking-wider">
+                      {leagueData?.slug ?? '—'}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (leagueData) {
+                          navigator.clipboard.writeText(leagueData.slug)
+                          setCopied(true)
+                          setTimeout(() => setCopied(false), 2000)
+                        }
+                      }}
+                      className={cn(
+                        'border-zinc-700 gap-1 shrink-0',
+                        copied ? 'text-emerald-400 border-emerald-500/50' : 'text-zinc-300'
+                      )}
+                    >
+                      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    </Button>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={copyInviteLink}
-                    className={cn(
-                      'border-zinc-700 gap-1 shrink-0',
-                      copied ? 'text-emerald-400 border-emerald-500/50' : 'text-zinc-300'
-                    )}
-                  >
-                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                    {copied ? 'Copied' : 'Copy'}
-                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs text-zinc-500">Full invite link</label>
+                  <div className="flex gap-2">
+                    <div className="flex-1 bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2 text-xs text-zinc-400 font-mono truncate">
+                      {inviteUrl}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={copyInviteLink}
+                      className="border-zinc-700 text-zinc-300 shrink-0"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <Button

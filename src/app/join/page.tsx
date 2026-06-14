@@ -11,12 +11,14 @@ export default function JoinPage() {
   const router = useRouter()
   const [leagueName, setLeagueName] = useState('')
   const [creating, setCreating] = useState(false)
-  const [error, setError] = useState('')
+  const [createError, setCreateError] = useState('')
+
+  const [inviteCode, setInviteCode] = useState('')
 
   async function createLeague() {
     if (!leagueName.trim()) return
     setCreating(true)
-    setError('')
+    setCreateError('')
     try {
       const res = await fetch('/api/league', {
         method: 'POST',
@@ -26,14 +28,22 @@ export default function JoinPage() {
       if (!res.ok) throw new Error('Failed to create league')
       router.push('/dashboard')
     } catch {
-      setError('Failed to create league. Please try again.')
+      setCreateError('Failed to create league. Please try again.')
       setCreating(false)
     }
   }
 
+  function joinWithCode() {
+    const code = inviteCode.trim()
+    if (!code) return
+    // Accept either a raw slug or a full invite URL
+    const slug = code.startsWith('http') ? new URL(code).pathname.split('/join/')[1] : code
+    router.push(`/join/${slug}`)
+  }
+
   return (
     <div className="flex min-h-dvh items-center justify-center bg-zinc-950 p-4">
-      <div className="w-full max-w-md space-y-6">
+      <div className="w-full max-w-md space-y-4">
         <div className="flex items-center justify-center gap-2 mb-8">
           <TrendingUp className="w-8 h-8 text-emerald-500" />
           <span className="font-heading font-bold text-2xl text-zinc-100">StatherStreetBets</span>
@@ -41,10 +51,38 @@ export default function JoinPage() {
 
         <Card className="bg-zinc-900 border-zinc-800">
           <CardHeader>
-            <CardTitle className="text-zinc-100">You&apos;re not in a league yet</CardTitle>
+            <CardTitle className="text-zinc-100">Join a league</CardTitle>
             <CardDescription className="text-zinc-400">
-              Create a new league or ask a friend for an invite link.
+              Enter the invite code your friend shared with you.
             </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Input
+              placeholder="Invite code or link"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && joinWithCode()}
+              className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
+            />
+            <Button
+              onClick={joinWithCode}
+              disabled={!inviteCode.trim()}
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white"
+            >
+              Join League
+            </Button>
+          </CardContent>
+        </Card>
+
+        <div className="relative flex items-center gap-3">
+          <div className="flex-1 h-px bg-zinc-800" />
+          <span className="text-zinc-600 text-xs">or</span>
+          <div className="flex-1 h-px bg-zinc-800" />
+        </div>
+
+        <Card className="bg-zinc-900 border-zinc-800">
+          <CardHeader>
+            <CardTitle className="text-zinc-100 text-base">Create a new league</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -55,12 +93,12 @@ export default function JoinPage() {
                 onKeyDown={(e) => e.key === 'Enter' && createLeague()}
                 className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
               />
-              {error && <p className="text-rose-500 text-sm">{error}</p>}
+              {createError && <p className="text-rose-500 text-sm">{createError}</p>}
             </div>
             <Button
               onClick={createLeague}
               disabled={creating || !leagueName.trim()}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white"
+              className="w-full bg-zinc-700 hover:bg-zinc-600 text-zinc-100"
             >
               {creating ? 'Creating…' : 'Create League'}
             </Button>
