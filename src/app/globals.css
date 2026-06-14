@@ -1,26 +1,79 @@
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import '@clerk/ui/themes/shadcn.css';
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  /* Brand colors */
+  --color-background: #09090B;
+  --color-surface: #18181B;
+  --color-border: #27272A;
+  --color-muted: #A1A1AA;
+  --color-win: #10B981;
+  --color-loss: #F43F5E;
+  --color-pending: #F59E0B;
+
+  /* shadcn/ui CSS variable mappings */
+  --color-background: #09090B;
+  --color-foreground: #F4F4F5;
+  --color-card: #18181B;
+  --color-card-foreground: #F4F4F5;
+  --color-popover: #18181B;
+  --color-popover-foreground: #F4F4F5;
+  --color-primary: #10B981;
+  --color-primary-foreground: #09090B;
+  --color-secondary: #27272A;
+  --color-secondary-foreground: #F4F4F5;
+  --color-muted: #27272A;
+  --color-muted-foreground: #A1A1AA;
+  --color-accent: #27272A;
+  --color-accent-foreground: #F4F4F5;
+  --color-destructive: #F43F5E;
+  --color-destructive-foreground: #F4F4F5;
+  --color-border: #27272A;
+  --color-input: #27272A;
+  --color-ring: #10B981;
+
+  /* Typography */
+  --font-heading: var(--font-geist-sans);
+  --font-body: var(--font-inter);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
+
+  /* Radius */
+  --radius: 0.75rem;
+
+  /* Spacing */
+  --spacing: 0.25rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background-color: #09090B;
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #09090B;
+  color: #F4F4F5;
+  font-family: var(--font-body, system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tabular numbers for stats */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #18181B;
+}
+::-webkit-scrollbar-thumb {
+  background: #3F3F46;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #52525B;
 }
