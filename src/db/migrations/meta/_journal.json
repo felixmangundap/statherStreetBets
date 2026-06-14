@@ -8,6 +8,13 @@
       "when": 1781397066193,
       "tag": "0000_material_marvel_zombies",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781411568635,
+      "tag": "0001_thick_shocker",
+      "breakpoints": true
     }
   ]
 }

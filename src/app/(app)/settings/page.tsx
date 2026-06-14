@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Check, Copy, RefreshCw, Save } from 'lucide-react'
+import { Check, Copy, LogOut, RefreshCw, Save } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const CURRENCIES = ['USD', 'GBP', 'EUR', 'AUD', 'CAD']
@@ -50,6 +50,10 @@ export default function SettingsPage() {
   const [savingLeague, setSavingLeague] = useState(false)
   const [copied, setCopied] = useState(false)
   const [regenerating, setRegenerating] = useState(false)
+  const [leavingLeague, setLeavingLeague] = useState(false)
+  const [leaveConfirm, setLeaveConfirm] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [syncResult, setSyncResult] = useState<string | null>(null)
 
   useEffect(() => {
     if (userData) {
@@ -105,6 +109,34 @@ export default function SettingsPage() {
       mutateLeague()
     } finally {
       setRegenerating(false)
+    }
+  }
+
+  async function leaveLeague() {
+    setLeavingLeague(true)
+    try {
+      await fetch('/api/league/me', { method: 'DELETE' })
+      mutateLeague()
+      window.location.href = '/join'
+    } finally {
+      setLeavingLeague(false)
+      setLeaveConfirm(false)
+    }
+  }
+
+  async function syncFixtures() {
+    setSyncing(true)
+    setSyncResult(null)
+    try {
+      const res = await fetch('/api/admin/sync-fixtures', { method: 'POST' })
+      const data = await res.json()
+      setSyncResult(res.ok ? `Synced ${data.synced} fixtures` : 'Sync failed')
+      setTimeout(() => setSyncResult(null), 4000)
+    } catch {
+      setSyncResult('Sync failed')
+      setTimeout(() => setSyncResult(null), 4000)
+    } finally {
+      setSyncing(false)
     }
   }
 
@@ -198,6 +230,49 @@ export default function SettingsPage() {
               )}
             </Button>
           </div>
+
+          {leagueData && !isAdmin && (
+            <div className="mt-4 bg-zinc-900 rounded-xl border border-zinc-800 p-6 space-y-3">
+              <h3 className="text-sm font-semibold text-zinc-300">League</h3>
+              <p className="text-zinc-500 text-xs">
+                You&apos;re a member of <span className="text-zinc-300">{leagueData.name}</span>.
+              </p>
+              {leaveConfirm ? (
+                <div className="space-y-2">
+                  <p className="text-sm text-rose-400">Are you sure you want to leave <span className="font-semibold">{leagueData.name}</span>?</p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setLeaveConfirm(false)}
+                      disabled={leavingLeague}
+                      className="border-zinc-700 text-zinc-300"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={leaveLeague}
+                      disabled={leavingLeague}
+                      className="bg-rose-600 hover:bg-rose-500 text-white"
+                    >
+                      {leavingLeague ? 'Leaving…' : 'Leave league'}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setLeaveConfirm(true)}
+                  className="border-rose-500/30 text-rose-400 hover:bg-rose-500/10 gap-1"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Leave league
+                </Button>
+              )}
+            </div>
+          )}
         </TabsContent>
 
         {isAdmin && (
@@ -222,6 +297,26 @@ export default function SettingsPage() {
                       <Save className="w-4 h-4" />
                     </Button>
                   </div>
+                </div>
+              </div>
+
+              <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 space-y-4">
+                <h3 className="text-sm font-semibold text-zinc-300">Fixtures</h3>
+                <p className="text-zinc-500 text-xs">Manually pull the latest match statuses and scores from the API.</p>
+                <div className="flex items-center gap-3">
+                  <Button
+                    onClick={syncFixtures}
+                    disabled={syncing}
+                    className="bg-zinc-700 hover:bg-zinc-600 text-zinc-100 gap-2"
+                  >
+                    <RefreshCw className={cn('w-4 h-4', syncing && 'animate-spin')} />
+                    {syncing ? 'Syncing…' : 'Sync Fixtures'}
+                  </Button>
+                  {syncResult && (
+                    <span className={cn('text-xs', syncResult.startsWith('Synced') ? 'text-emerald-400' : 'text-rose-400')}>
+                      {syncResult}
+                    </span>
+                  )}
                 </div>
               </div>
 

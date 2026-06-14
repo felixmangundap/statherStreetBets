@@ -9,6 +9,15 @@ import type { Fixture } from '@/db/schema'
 const LIVE_STATUSES = ['LIVE', '1H', '2H', 'HT', 'ET', 'P']
 const FINISHED_STATUSES = ['FT', 'AET', 'PEN']
 
+function liveTimeStr(kickoffAt: Date | string): string {
+  const elapsed = Math.floor((Date.now() - new Date(kickoffAt).getTime()) / 60000)
+  if (elapsed <= 45) return `${elapsed}'`
+  if (elapsed <= 60) return 'HT'
+  const half2 = elapsed - 15
+  if (half2 <= 90) return `${half2}'`
+  return 'ET'
+}
+
 function TeamLogo({ name, logo, large }: { name: string; logo?: string | null; large?: boolean }) {
   const sizeClass = large ? 'w-10 h-10' : 'w-8 h-8'
   if (logo) {
@@ -52,13 +61,13 @@ export default function FixtureCard({ fixture, onAddBet, large }: FixtureCardPro
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
-            LIVE · {fixture.status}
+            LIVE · {liveTimeStr(fixture.kickoffAt)}
           </span>
         ) : isFinished ? (
           <span className="text-xs text-zinc-500 font-medium">FT</span>
         ) : (
           <span className="text-xs text-amber-400 font-medium">
-            {fmtEst(fixture.kickoffAt, 'MMM d · HH:mm')}
+            {fmtEst(fixture.kickoffAt, 'MMM d · HH:mm')} ET
           </span>
         )}
       </div>
@@ -75,15 +84,15 @@ export default function FixtureCard({ fixture, onAddBet, large }: FixtureCardPro
 
         {/* Score / vs */}
         <div className={cn('text-center shrink-0', large ? 'min-w-[72px]' : 'min-w-[56px]')}>
-          {isFinished && hasScore ? (
-            <div className={cn('font-bold tabular-nums leading-none text-zinc-100', large ? 'text-3xl' : 'text-xl')}>
+          {(isFinished || isLive) && hasScore ? (
+            <div className={cn('font-bold tabular-nums leading-none', large ? 'text-3xl' : 'text-xl', isLive ? 'text-emerald-400' : 'text-zinc-100')}>
               {fixture.homeScore} – {fixture.awayScore}
             </div>
           ) : isLive ? (
             <div className={cn('font-bold text-zinc-500', large ? 'text-base' : 'text-sm')}>vs</div>
           ) : (
-            <div className="text-zinc-500 text-xs font-medium">
-              {fmtEst(fixture.kickoffAt, 'MMM d')}
+            <div className="text-zinc-500 text-xs font-medium tabular-nums">
+              {fmtEst(fixture.kickoffAt, 'HH:mm')} ET
             </div>
           )}
         </div>

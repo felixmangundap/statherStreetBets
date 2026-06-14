@@ -78,11 +78,11 @@ export default function GameClient({ currentUserId, currency, members }: GameCli
   const { data: fixtures } = useSWR<Fixture[]>('/api/fixtures', fetcher, { refreshInterval: 30_000 })
   const { data: allBets } = useSWR<BetWithUser[]>('/api/bets', fetcher, { refreshInterval: 30_000 })
 
-  // Active fixtures only: live + upcoming
+  // Active fixtures: live first, then all upcoming NS games
   const gameFixtures = useMemo(() => {
     if (!fixtures) return []
     const live = fixtures.filter((f) => LIVE_STATUSES.includes(f.status))
-    const upcoming = fixtures.filter((f) => f.status === 'NS').slice(0, 8)
+    const upcoming = fixtures.filter((f) => f.status === 'NS')
     return [...live, ...upcoming]
   }, [fixtures])
 

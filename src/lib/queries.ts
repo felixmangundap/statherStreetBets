@@ -1,7 +1,7 @@
 import { clerkClient } from '@clerk/nextjs/server'
 import { db } from '@/db'
 import { users, leagues, leagueMembers, bets } from '@/db/schema'
-import { eq, and, ne, sql } from 'drizzle-orm'
+import { eq, and, ne, sql, desc } from 'drizzle-orm'
 import type { League, User } from '@/db/schema'
 
 export async function getUserDbRecord(clerkId: string): Promise<User | null> {
@@ -39,6 +39,7 @@ export async function getUserLeague(
     .from(leagueMembers)
     .innerJoin(leagues, eq(leagueMembers.leagueId, leagues.id))
     .where(eq(leagueMembers.userId, user.id))
+    .orderBy(desc(leagueMembers.joinedAt))
     .limit(1)
 
   if (!result[0]) return null

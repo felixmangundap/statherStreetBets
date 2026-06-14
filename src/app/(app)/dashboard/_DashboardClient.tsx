@@ -11,6 +11,7 @@ import {
   formatOdds,
   formatPercent,
   cn,
+  fmtEst,
 } from '@/lib/utils'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -106,13 +107,15 @@ interface DashboardData {
   currency: string
 }
 
+const LIVE_STATUSES = ['LIVE', '1H', '2H', 'HT', 'ET', 'P']
+
 const RANK_COLORS: Record<number, string> = {
   1: 'text-amber-400',
   2: 'text-zinc-300',
   3: 'text-amber-700',
 }
 
-const hour = new Date().getHours()
+const hour = parseInt(fmtEst(new Date(), 'H'), 10)
 const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
 
 export default function DashboardClient({
@@ -136,7 +139,7 @@ export default function DashboardClient({
   })
 
   const liveFixtures = useMemo(
-    () => (fixtures ?? []).filter((f) => f.status === 'LIVE'),
+    () => (fixtures ?? []).filter((f) => LIVE_STATUSES.includes(f.status)),
     [fixtures]
   )
 
